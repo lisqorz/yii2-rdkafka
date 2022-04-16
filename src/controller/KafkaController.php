@@ -1,13 +1,13 @@
 <?php
 
-namespace lisqorz\rdkafka\controller;
+namespace lisq\kafka\controller;
 
-use lisqorz\rdkafka\ConsumerInterface;
-use lisqorz\rdkafka\Exception;
-use lisqorz\rdkafka\Kafka;
-use RdKafka\Conf;
-use RdKafka\KafkaConsumer;
-use RdKafka\Message;
+use lisq\kafka\ConsumerInterface;
+use lisq\kafka\Exception;
+use lisq\kafka\Kafka;
+use \RdKafka\Conf;
+use \RdKafka\KafkaConsumer;
+use \RdKafka\Message;
 use yii\console\Controller;
 
 class KafkaController extends Controller

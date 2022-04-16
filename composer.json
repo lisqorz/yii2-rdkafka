@@ -1,5 +1,5 @@
 {
-    "name": "lisqorz/yii2-rdkafka",
+    "name": "lisq/yii2-kafka",
     "description": "yii2 kafka 生产者、消费者组件",
     "type": "yii2-extension",
     "keywords": ["yii2","extension","rdkafka","kafka","mq"],
@@ -17,10 +17,13 @@
     },
     "autoload": {
         "psr-4": {
-            "lisqorz\\rdkafka\\": "src"
+            "lisq\\kafka\\": "src"
         }
     },
     "extra": {
-        "bootstrap": "lisqorz\\rdkafka\\DependencyInjection"
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        },
+        "bootstrap": "lisq\\kafka\\DependencyInjection"
     }
 }

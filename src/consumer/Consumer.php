@@ -1,6 +1,6 @@
 <?php
 
-namespace lisqorz\rdkafka;
+namespace lisq\kafka;
 
 use Yii;
 use RdKafka\Conf;

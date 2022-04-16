@@ -1,7 +1,7 @@
 <?php
 
 
-namespace lisqorz\rdkafka;
+namespace lisq\kafka;
 
 
 use yii\base\Behavior;

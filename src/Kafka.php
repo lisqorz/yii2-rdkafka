@@ -1,8 +1,8 @@
 <?php
 
-namespace lisqorz\rdkafka;
+namespace lisq\kafka;
 
-use lisqorz\rdkafka\producer\Producer;
+use lisq\kafka\producer\Producer;
 use yii\base\Component;
 
 class Kafka extends Component

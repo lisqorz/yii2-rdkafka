@@ -1,5 +1,5 @@
 <?php
-namespace lisqorz\rdkafka;
+namespace lisq\kafka;
 
 use RdKafka\Message;
 

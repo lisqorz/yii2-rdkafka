@@ -1,6 +1,6 @@
 <?php
 
-namespace lisqorz\rdkafka\producer;
+namespace lisq\kafka\producer;
 
 class Producer
 {

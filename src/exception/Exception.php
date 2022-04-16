@@ -1,7 +1,7 @@
 <?php
 
 
-namespace lisqorz\rdkafka;
+namespace lisq\kafka;
 
 
 class Exception extends \RdKafka\Exception

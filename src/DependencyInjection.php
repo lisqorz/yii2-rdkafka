@@ -1,8 +1,8 @@
 <?php
 
-namespace lisqorz\rdkafka;
+namespace lisq\kafka;
 
-use lisqorz\rdkafka\controller\KafkaController;
+use lisq\kafka\controller\KafkaController;
 use yii\base\BootstrapInterface;
 
 class DependencyInjection implements BootstrapInterface
