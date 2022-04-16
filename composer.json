@@ -1,0 +1,25 @@
+{
+    "name": "lisqorz/yii2-rdkafka",
+    "description": "yii2 kafka 生产者、消费者组件",
+    "type": "library",
+    "keywords": ["yii2","extension","rdkafka","kafka","mq"],
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "lisqorz",
+            "email": "mail@lishunqi.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "~2.0.0",
+        "ext-rdkafka": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "lisqorz\\rdkafka\\": "src"
+        }
+    },
+    "extra": {
+        "bootstrap": "lisqorz\\rdkafka\\DependencyInjection"
+    }
+}
