@@ -17,7 +17,7 @@ class KafkaController extends Controller
         /** @var Kafka $component */
         $component = \Yii::$app->{$componentName};
         /** @var ConsumerInterface $consume */
-        $consume = $component['consumes'][$name];
+        $consume = $component->consumes[$name];
         $groupId = $consume['groupId'];
         $topic = $consume['topic'];
         $consumeTimeout = $consume['timeout'] ?? 120 * 1000;
