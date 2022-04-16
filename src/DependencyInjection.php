@@ -2,10 +2,7 @@
 
 namespace lisqorz\rdkafka;
 
-use Cassandra\Exception\ConfigurationException;
 use lisqorz\rdkafka\controller\KafkaController;
-use mikemadisonweb\rabbitmq\components\AbstractConnectionFactory;
-use mikemadisonweb\rabbitmq\Configuration;
 use yii\base\Application;
 use yii\base\BootstrapInterface;
 
