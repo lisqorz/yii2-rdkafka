@@ -2,94 +2,87 @@
 
 namespace lisq\kafka\controller;
 
-use lisq\kafka\ConsumerInterface;
-use lisq\kafka\Exception;
+use lisq\kafka\consumer\ConsumerInterface;
+use lisq\kafka\exception\Exception;
 use lisq\kafka\Kafka;
-use \RdKafka\Conf;
-use \RdKafka\KafkaConsumer;
-use \RdKafka\Message;
+use RdKafka\Conf;
+use RdKafka\KafkaConsumer;
+use RdKafka\Message;
 use yii\console\Controller;
 
 class KafkaController extends Controller
 {
+    public $name;
+
     public function actionConsume($name, $componentName = 'kafka')
     {
+        $this->name = $name;
         /** @var Kafka $component */
         $component = \Yii::$app->{$componentName};
         /** @var ConsumerInterface $consume */
-        $consume = $component->consumes[$name];
+        $consume = $component->consumers[$name];
         $groupId = $consume['groupId'];
         $topic = $consume['topic'];
         $consumeTimeout = $consume['timeout'] ?? 120 * 1000;
+        $class = $consume['consume'];
+
         if (empty($topic) || empty($groupId)) {
             throw new Exception("groupId 或 topic 不能为空");
         }
-        $class = new $consume['class'];
         $handle = \Yii::createObject($class);
         if (!($handle instanceof ConsumerInterface)) {
             throw new Exception('ConsumerInterface::execute must implements');
         }
-
         $conf = $this->getConf($component);
-
         $conf->set('group.id', $groupId);
-
-        $consumer = new KafkaConsumer($conf);
-        $consumer->subscribe($topic);
-        $this->logHandle->debug("Consume Process[$this->client_id] Started!");
-
+        $consumer = new \RdKafka\Consumer($conf);
+        $topicConsume = $consumer->newTopic($topic);
+        $topicConsume->consumeStart(0, RD_KAFKA_OFFSET_BEGINNING);
         while (true) {
             try {
-                $message = $consumer->consume($consumeTimeout);
+                $message = $topicConsume->consume(0, $consumeTimeout);
+                if (!$message) {
+                    continue;
+                }
                 if ($this->chkMessage($message)) {
                     continue;
                 }
-                $this->messageLog($message);
                 $handle->execute($message);
-                $consumer->commit();
-
-            } catch (\Throwable $e) {
-                $err = $e->getMessage();
-                $this->logHandle->error($err);
-                $this->exceptionNotice($err);
+            } catch (\Exception $e) {
+                \Yii::error($e->getMessage(),'kafka'. $this->name);
             }
         }
-
-
     }
 
     private function getConf($component)
     {
         $rdConfig = $component->rdkafka;
         $conf = new Conf();
-        $conf->set('metadata.broker.list', $component['metadata.broker.list']);
-        // todo 不知道
-//        $conf->set('client.id', $this->client_id);
-        // todo 不知道
         $conf->setRebalanceCb([$this, 'rebalanceCb']);
-
-        $conf->set('auto.offset.reset', $rdConfig['auto.offset.reset']);
-        // 在interval.ms的时间内自动提交确认(默认开启)，建议不要启动, 1是启动，0是未启动
-        $conf->set('enable.auto.commit', $rdConfig['enable.auto.commit']);
-         $conf->set('auto.commit.interval.ms', $rdConfig['auto.commit.interval.ms']);
+        foreach ($rdConfig as $key => $value) {
+            $conf->set($key, $value);
+        }
+        $conf->set('client.id', $this->name);
+        $conf->set('bootstrap.servers', $component->hosts);
         return $conf;
     }
-    /**
-     * 异常通知
-     *
-     * @param $message
-     */
-    public function exceptionNotice($message)
-    {
-        if ($this->exceptionNoticeClass === null) {
-            return;
-        }
 
-        $obj = Yii::createObject(['class' => $this->exceptionNoticeClass]);
-        if ($obj instanceof ExceptionNoticeInterface) {
-            $obj->send($message);
-        }
-    }
+//    /**
+//     * 异常通知
+//     *
+//     * @param $message
+//     */
+//    public function exceptionNotice($message)
+//    {
+//        if ($this->exceptionNoticeClass === null) {
+//            return;
+//        }
+//
+//        $obj = Yii::createObject(['class' => $this->exceptionNoticeClass]);
+//        if ($obj instanceof ExceptionNoticeInterface) {
+//            $obj->send($message);
+//        }
+//    }
 
     /**
      * 当有新的消费进程加入或者退出消费组时，kafka 会自动重新分配分区给消费者进程，这里注册了一个回调函数，当分区被重新分配时触发
@@ -105,19 +98,19 @@ class KafkaController extends Controller
             case RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS:
                 // 消费进程分配分区时
                 $str = count($partitions) > 0 ? '成功' : '失败';
-                $this->logHandle->debug("Assign:消费进程分配分区 {$str}");
+                \Yii::error("Assign:消费进程分配分区 {$str}",'kafka'. $this->name);
                 $kafka->assign($partitions);
                 break;
 
             case RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS:
                 // 消费进程退出分区时
-                $this->logHandle->debug("Revoke:消费进程退出分区");
+                \Yii::error("Revoke:消费进程退出分区",'kafka'. $this->name);
                 $kafka->assign(null);
                 break;
 
             default:
                 // 错误
-                $this->logHandle->debug("Error:消费进程分配分区错误，信息：{$err}");
+                \Yii::error("Error:消费进程分配分区错误，信息：{$err}",'kafka'. $this->name);
                 throw new Exception($err);
         }
     }
@@ -164,9 +157,9 @@ class KafkaController extends Controller
         }
 
         if ($error || $errorMsg) {
-            $this->logHandle->error("消费返回记录错误：" . $logContent);
+            \Yii::error("消费返回记录错误：{$logContent}",'kafka'. $this->name);
         } else {
-            $this->logHandle->info($logContent);
+            \Yii::info("消费返回记录错误：{$logContent}",'kafka'. $this->name);
         }
     }
 

@@ -23,4 +23,6 @@ class DependencyInjection implements BootstrapInterface
             $app->controllerMap["kafka"] = KafkaController::class;
         }
     }
+
+
 }
