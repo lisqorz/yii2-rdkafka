@@ -2,6 +2,7 @@
 
 namespace lisq\kafka;
 
+use RdKafka\Producer;
 use yii\base\Component;
 use yii\log\Dispatcher;
 
@@ -44,6 +45,7 @@ class Kafka extends Component
 
     public function publishBulk($data)
     {
+        /** @var Producer $producer */
         $producer = \Yii::$container->get('kafka-connection');
         foreach ($data as $topic => $msgList) {
             $topic = $producer->newTopic($topic);
@@ -52,7 +54,8 @@ class Kafka extends Component
             }
         }
         $producer->poll(0);
-        $result = $producer->flush(10000);
+        $result = $producer->flush(5000);
+        var_dump($result);
         if (RD_KAFKA_RESP_ERR_NO_ERROR !== $result) {
             return false;
         }

@@ -35,12 +35,12 @@ class KafkaController extends Controller
         }
         $conf = $this->getConf($component);
         $conf->set('group.id', $groupId);
-        $consumer = new \RdKafka\Consumer($conf);
-        $topicConsume = $consumer->newTopic($topic);
-        $topicConsume->consumeStart(0, RD_KAFKA_OFFSET_BEGINNING);
+        var_dump($conf);
+        $consumer = new KafkaConsumer($conf);
+        $consumer->subscribe($topic);
         while (true) {
             try {
-                $message = $topicConsume->consume(0, $consumeTimeout);
+                $message = $consumer->consume($consumeTimeout);
                 if (!$message) {
                     continue;
                 }
@@ -48,6 +48,7 @@ class KafkaController extends Controller
                     continue;
                 }
                 $handle->execute($message);
+                $consumer->commit();
             } catch (\Exception $e) {
                 \Yii::error($e->getMessage(),'kafka'. $this->name);
             }
@@ -58,12 +59,12 @@ class KafkaController extends Controller
     {
         $rdConfig = $component->rdkafka;
         $conf = new Conf();
-        $conf->setRebalanceCb([$this, 'rebalanceCb']);
         foreach ($rdConfig as $key => $value) {
             $conf->set($key, $value);
         }
         $conf->set('client.id', $this->name);
         $conf->set('bootstrap.servers', $component->hosts);
+        $conf->setRebalanceCb([$this, 'rebalanceCb']);
         return $conf;
     }
 
@@ -74,7 +75,7 @@ class KafkaController extends Controller
 //     */
 //    public function exceptionNotice($message)
 //    {
-//        if ($this->exceptionNoticeClass === null) {
+//        if ($this->exceptionNoticeClass === null) {l
 //            return;
 //        }
 //
@@ -94,17 +95,18 @@ class KafkaController extends Controller
      */
     public function rebalanceCb(KafkaConsumer $kafka, $err, array $partitions = null)
     {
+        var_dump($partitions,$err);
         switch ($err) {
             case RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS:
                 // 消费进程分配分区时
                 $str = count($partitions) > 0 ? '成功' : '失败';
-                \Yii::error("Assign:消费进程分配分区 {$str}",'kafka'. $this->name);
+                \Yii::info("Assign:消费进程分配分区 {$str}",'kafka'. $this->name);
                 $kafka->assign($partitions);
                 break;
 
             case RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS:
                 // 消费进程退出分区时
-                \Yii::error("Revoke:消费进程退出分区",'kafka'. $this->name);
+                \Yii::info("Revoke:消费进程退出分区",'kafka'. $this->name);
                 $kafka->assign(null);
                 break;
 
