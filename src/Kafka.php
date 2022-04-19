@@ -55,7 +55,6 @@ class Kafka extends Component
         }
         $producer->poll(0);
         $result = $producer->flush(5000);
-        var_dump($result);
         if (RD_KAFKA_RESP_ERR_NO_ERROR !== $result) {
             return false;
         }
