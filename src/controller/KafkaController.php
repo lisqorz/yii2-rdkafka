@@ -35,7 +35,6 @@ class KafkaController extends Controller
         }
         $conf = $this->getConf($component);
         $conf->set('group.id', $groupId);
-        var_dump($conf);
         $consumer = new KafkaConsumer($conf);
         $consumer->subscribe($topic);
         while (true) {

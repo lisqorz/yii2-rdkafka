@@ -24,26 +24,30 @@ class Kafka extends Component
         if (!\Yii::$container->hasSingleton('kafka-connection')) {
             \Yii::$container->setSingleton('kafka-connection', function () {
                 $config = new \RdKafka\Conf();
+                $rdConfig = $this->rdkafka;
+                foreach ($rdConfig as $key => $value) {
+                    $config->set($key, $value);
+                }
                 $config->set('bootstrap.servers', $this->hosts);
                 return new \RdKafka\Producer($config);
             });
         }
     }
 
-    public function publishOne($topic, $msg)
+    public function publishOne($topic, $msg,$poll=0,$flush=1000)
     {
         $producer = \Yii::$container->get('kafka-connection');
         $topic = $producer->newTopic($topic);
         $topic->produce(RD_KAFKA_PARTITION_UA, 0, json_encode($msg));
-        $producer->poll(0);
-        $result = $producer->flush(10000);
+        $producer->poll($poll);
+        $result = $producer->flush($flush);
         if (RD_KAFKA_RESP_ERR_NO_ERROR !== $result) {
             return false;
         }
         return true;
     }
 
-    public function publishBulk($data)
+    public function publishBulk($data,$poll=0,$flush=1000)
     {
         /** @var Producer $producer */
         $producer = \Yii::$container->get('kafka-connection');
@@ -53,8 +57,8 @@ class Kafka extends Component
                 $topic->produce(RD_KAFKA_PARTITION_UA, 0, json_encode($msg));
             }
         }
-        $producer->poll(0);
-        $result = $producer->flush(5000);
+        $producer->poll($poll);
+        $result = $producer->flush($flush);
         if (RD_KAFKA_RESP_ERR_NO_ERROR !== $result) {
             return false;
         }
