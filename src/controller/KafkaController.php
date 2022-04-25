@@ -94,22 +94,25 @@ class KafkaController extends Controller
      */
     public function rebalanceCb(KafkaConsumer $kafka, $err, array $partitions = null)
     {
-        var_dump($partitions,$err);
+
         switch ($err) {
             case RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS:
                 // 消费进程分配分区时
                 $str = count($partitions) > 0 ? '成功' : '失败';
+                echo "Assign:消费进程分配分区 {$str}",'kafka'. $this->name.PHP_EOL;
                 \Yii::info("Assign:消费进程分配分区 {$str}",'kafka'. $this->name);
                 $kafka->assign($partitions);
                 break;
 
             case RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS:
                 // 消费进程退出分区时
+                echo "Revoke:消费进程退出分区",'kafka'. $this->name.PHP_EOL;
                 \Yii::info("Revoke:消费进程退出分区",'kafka'. $this->name);
                 $kafka->assign(null);
                 break;
 
             default:
+                echo "Error:消费进程分配分区错误，信息：{$err}",'kafka'. $this->name.PHP_EOL;
                 // 错误
                 \Yii::error("Error:消费进程分配分区错误，信息：{$err}",'kafka'. $this->name);
                 throw new Exception($err);
