@@ -49,7 +49,7 @@ class KafkaController extends Controller
                 $handle->execute($message);
                 $consumer->commit();
             } catch (\Exception $e) {
-                \Yii::error($e->getMessage(),'kafka'. $this->name);
+                \Yii::error($e->getMessage(), 'kafka' . $this->name);
             }
         }
     }
@@ -98,23 +98,25 @@ class KafkaController extends Controller
         switch ($err) {
             case RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS:
                 // 消费进程分配分区时
-                $str = count($partitions) > 0 ? '成功' : '失败';
-                echo "Assign:消费进程分配分区 {$str}",'kafka'. $this->name.PHP_EOL;
-                \Yii::info("Assign:消费进程分配分区 {$str}",'kafka'. $this->name);
+                $cnt = count($partitions);
+                $str = $cnt > 0 ? '成功' : '失败';
+
+                echo "Assign:消费进程分配分区({$cnt}) {$str}", 'kafka' . $this->name . PHP_EOL;
+                \Yii::info("Assign:消费进程分配分区 {$str}", 'kafka' . $this->name);
                 $kafka->assign($partitions);
                 break;
 
             case RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS:
                 // 消费进程退出分区时
-                echo "Revoke:消费进程退出分区",'kafka'. $this->name.PHP_EOL;
-                \Yii::info("Revoke:消费进程退出分区",'kafka'. $this->name);
+                echo "Revoke:消费进程退出分区", 'kafka' . $this->name . PHP_EOL;
+                \Yii::info("Revoke:消费进程退出分区", 'kafka' . $this->name);
                 $kafka->assign(null);
                 break;
 
             default:
-                echo "Error:消费进程分配分区错误，信息：{$err}",'kafka'. $this->name.PHP_EOL;
+                echo "Error:消费进程分配分区错误，信息：{$err}", 'kafka' . $this->name . PHP_EOL;
                 // 错误
-                \Yii::error("Error:消费进程分配分区错误，信息：{$err}",'kafka'. $this->name);
+                \Yii::error("Error:消费进程分配分区错误，信息：{$err}", 'kafka' . $this->name);
                 throw new Exception($err);
         }
     }
@@ -161,9 +163,9 @@ class KafkaController extends Controller
         }
 
         if ($error || $errorMsg) {
-            \Yii::error("消费返回记录错误：{$logContent}",'kafka'. $this->name);
+            \Yii::error("消费返回记录错误：{$logContent}", 'kafka' . $this->name);
         } else {
-            \Yii::info("消费返回记录错误：{$logContent}",'kafka'. $this->name);
+            \Yii::info("消费返回记录错误：{$logContent}", 'kafka' . $this->name);
         }
     }
 
